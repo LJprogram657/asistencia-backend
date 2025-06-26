@@ -10,9 +10,16 @@ class LoginUsuarioAPIView(APIView):
         user = authenticate(username=username, password=password)
         if user is not None:
             rol_nombre = user.rol.nombre if user.rol else None
-            return Response({'mensaje': 'Login exitoso', 'usuario': username, 'rol': rol_nombre}, status=status.HTTP_200_OK)
+            return Response({'mensaje': 'Login exitoso', 'usuario': username, 'rol': rol_nombre, 'token': 'token-simulado'}, status=status.HTTP_200_OK)
         return Response({'error': 'Usuario o contraseña incorrectos.'}, status=status.HTTP_401_UNAUTHORIZED)
-from .serializers import RegistroUsuarioSerializer
+from .serializers import RegistroUsuarioSerializer, RolSerializer
+from .models import Rol
+
+class ListRolesAPIView(APIView):
+    def get(self, request):
+        roles = Rol.objects.all()
+        serializer = RolSerializer(roles, many=True)
+        return Response(serializer.data)
 
 class RegistroUsuarioAPIView(APIView):
     def post(self, request):

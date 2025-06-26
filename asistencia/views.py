@@ -41,14 +41,16 @@ class UserListAPIView(APIView):
 class AsistenciaAPIView(generics.ListAPIView):
     serializer_class = AsistenciaSerializer
     authentication_classes = [SessionAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    # Cambiamos el permiso para que solo los administradores (staff) puedan acceder.
+    # Esta es la forma más limpia y segura de restringir el acceso.
+    permission_classes = [permissions.IsAdminUser]
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.is_staff:
-            return Asistencia.objects.filter(usuario=user).order_by('-fecha_hora')
-
-        # Lógica de filtro para administradores
+        """
+        Este método ahora solo se ejecutará si el usuario es un administrador,
+        gracias a la validación de 'permission_classes'.
+        La lógica de filtrado se mantiene intacta para los administradores.
+        """
         queryset = Asistencia.objects.select_related('usuario').all()
         user_id = self.request.query_params.get('user_id') or self.request.query_params.get('usuario')
         fecha_inicio = self.request.query_params.get('fecha_inicio')
