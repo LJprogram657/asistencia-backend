@@ -9,19 +9,20 @@ import openpyxl
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import TokenAuthentication
 from .models import Asistencia
 from .serializers import AsistenciaSerializer
 from usuarios.models import Usuario
 from usuarios.serializers import UsuarioSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from .permisos import EsAdministradorOEmpleadoRol
 
 # Create your views here.
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserStatusAPIView(APIView):
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -29,7 +30,7 @@ class UserStatusAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserListAPIView(APIView):
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request, *args, **kwargs):
@@ -40,10 +41,8 @@ class UserListAPIView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class AsistenciaAPIView(generics.ListAPIView):
     serializer_class = AsistenciaSerializer
-    authentication_classes = [SessionAuthentication]
-    # Cambiamos el permiso para que solo los administradores (staff) puedan acceder.
-    # Esta es la forma más limpia y segura de restringir el acceso.
-    permission_classes = [permissions.IsAdminUser]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [EsAdministradorOEmpleadoRol]
 
     def get_queryset(self):
         """
@@ -162,5 +161,5 @@ def exportar_asistencias_excel(request):
 class AsistenciaListCreateAPIView(generics.ListCreateAPIView):
     queryset = Asistencia.objects.all()
     serializer_class = AsistenciaSerializer
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
